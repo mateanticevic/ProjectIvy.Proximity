@@ -22,7 +22,6 @@ async def hello():
     async with websockets.connect(uri) as websocket:
 
         tracking = await websocket.recv()
-        print(f"< {tracking}")
         logging.info(tracking)
 
 try:
