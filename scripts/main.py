@@ -18,6 +18,13 @@ import traceback
 
 logging.basicConfig(level=logging.DEBUG)
 
+class Location:
+    def __init__(self, lat, lng):
+        self.lat = lat
+        self.lng = lng
+    def __eq__(self, other):
+        return self.lat == other.lat and self.lng == other.lng
+
 async def hello():
     uri = "ws://hub.anticevic.net/TrackingHub"
     async with websockets.connect(uri) as websocket:
@@ -28,7 +35,10 @@ async def hello():
 def getLastTracking():
     uri = "https://api2.anticevic.net/tracking/last"
     response = requests.get(uri, headers={"Authorization": ""})
-    logging.info(response.json())
+    json = response.json()
+    logging.info(json)
+
+    return Location(json["lat"], json["lng"])
 
 try:
     logging.info("main started")
@@ -38,7 +48,16 @@ try:
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
 
-    getLastTracking()
+    lastLocation = Location(0, 0)
+
+    while True:
+        location = getLastTracking()
+        if location != lastLocation:
+            logging.info("new location received")
+            lastLocation = location
+
+        logging.info("waiting 10s")
+        time.sleep(10000)
     
     # Drawing on the image
     font15 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 15)
