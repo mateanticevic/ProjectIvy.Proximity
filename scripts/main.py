@@ -18,12 +18,23 @@ import traceback
 
 logging.basicConfig(level=logging.DEBUG)
 
+# Drawing on the image
+font15 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 15)
+font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
+
 class Location:
     def __init__(self, lat, lng):
         self.lat = lat
         self.lng = lng
     def __eq__(self, other):
         return self.lat == other.lat and self.lng == other.lng
+
+def drawImage(h, w):
+    image = Image.new('1', (h, w), 255)
+    draw = ImageDraw.Draw(image)
+    draw.text((110, 100), 'Mate is', font = font15, fill = 0)
+
+    return image
 
 async def hello():
     uri = "ws://hub.anticevic.net/TrackingHub"
@@ -48,6 +59,9 @@ try:
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
 
+    img = drawImage(epd.height, epd.width)
+    img.save('~/img.jpg', 'JPEG')
+
     lastLocation = Location(0, 0)
 
     while True:
@@ -58,10 +72,6 @@ try:
 
         logging.info("waiting 10s")
         time.sleep(10000)
-    
-    # Drawing on the image
-    font15 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 15)
-    font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
     
     logging.info("1.Drawing on the image...")
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame    
