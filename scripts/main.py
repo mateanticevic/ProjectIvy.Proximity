@@ -3,6 +3,7 @@
 import sys
 import os
 import asyncio
+import requests
 import websockets
 picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pic')
 libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
@@ -24,6 +25,11 @@ async def hello():
         tracking = await websocket.recv()
         logging.info(tracking)
 
+def getLastTracking():
+    uri = "https://api2.anticevic.net/tracking/last"
+    response = requests.get(uri, headers={"Authorization": ""})
+    logging.info(response.json())
+
 try:
     logging.info("main started")
     
@@ -32,8 +38,7 @@ try:
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
 
-    logging.info("connect to hub")
-    asyncio.get_event_loop().run_until_complete(hello())
+    getLastTracking()
     
     # Drawing on the image
     font15 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 15)
