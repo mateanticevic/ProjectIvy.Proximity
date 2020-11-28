@@ -5,7 +5,7 @@ import os
 import asyncio
 import requests
 import websockets
-picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pic')
+picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'fonts')
 libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
@@ -19,9 +19,11 @@ from geopy import distance
 
 logging.basicConfig(level=logging.DEBUG)
 
-
-font = ImageFont.load_default()
+font = ImageFont.truetype(os.path.join(picdir, 'good_times_rg.ttf'), 20)
 home_location = (45.799502, 15.909997)
+
+string_x_km_away = "{distance:.0f}km away"
+string_x_m_away = "{distance:.0f}m away"
 
 class Location:
     def __init__(self, lat, lng):
@@ -34,14 +36,19 @@ def drawImage(h, w, distance):
     image = Image.new('1', (h, w), 255)
     draw = ImageDraw.Draw(image)
     draw.text((110, 20), 'Mate is', font = font, fill = 0)
-    draw.text((110, 40), f"{distance}km away", font = font, fill = 0)
+
+    line = string_x_m_away if distance < 1 else string_x_km_away
+    distance_formated = distance * 1000 if distance < 1 else distance
+    string_away_formatted = line.format(distance = distance_formated)
+
+    logging.info(string_away_formatted)
+    draw.text((110, 40), string_away_formatted, font = font, fill = 0)
 
     return image
 
 async def hello():
     uri = "ws://hub.anticevic.net/TrackingHub"
     async with websockets.connect(uri) as websocket:
-
         tracking = await websocket.recv()
         logging.info(tracking)
 
