@@ -30,10 +30,11 @@ class Location:
     def __eq__(self, other):
         return self.lat == other.lat and self.lng == other.lng
 
-def drawImage(h, w):
+def drawImage(h, w, distance):
     image = Image.new('1', (h, w), 255)
     draw = ImageDraw.Draw(image)
     draw.text((110, 20), 'Mate is', font = font, fill = 0)
+    draw.text((110, 40), f"{distance}km away", font = font, fill = 0)
 
     return image
 
@@ -60,16 +61,15 @@ try:
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
 
-    img = drawImage(epd.height, epd.width)
-    img.save('~/img2.jpg', 'JPEG')
-
     lastLocation = (0, 0)
 
     while True:
         location = getLastTracking()
         if location != lastLocation:
             logging.info("new location received")
-            logging.info(distance.distance(location, home_location).km)
+            distance_between = distance.distance(location, home_location).km
+            img = drawImage(epd.height, epd.width, distance_between)
+            img.save('img2.jpg', 'JPEG')
             lastLocation = location
 
         logging.info("waiting 10s")
@@ -89,8 +89,8 @@ try:
     draw.pieslice((55, 60, 95, 100), 270, 360, fill = 0)
     draw.polygon([(110,0),(110,50),(150,25)],outline = 0)
     draw.polygon([(190,0),(190,50),(150,25)],fill = 0)
-    draw.text((120, 60), 'e-Paper demo', font = font15, fill = 0)
-    draw.text((110, 90), u'微雪电子', font = font24, fill = 0)
+    draw.text((120, 60), 'e-Paper demo', font = font, fill = 0)
+    draw.text((110, 90), u'微雪电子', font = font, fill = 0)
     epd.display(epd.getbuffer(image))
     time.sleep(2)
     
@@ -121,7 +121,7 @@ try:
     num = 0
     while (True):
         time_draw.rectangle((120, 80, 220, 105), fill = 255)
-        time_draw.text((120, 80), time.strftime('%H:%M:%S'), font = font24, fill = 0)
+        time_draw.text((120, 80), time.strftime('%H:%M:%S'), font = font, fill = 0)
         epd.displayPartial(epd.getbuffer(time_image))
         num = num + 1
         if(num == 10):
