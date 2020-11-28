@@ -11,16 +11,17 @@ if os.path.exists(libdir):
     sys.path.append(libdir)
 
 import logging
-from waveshare_epd import epd2in13_V2
 import time
-from PIL import Image,ImageDraw,ImageFont
 import traceback
+from PIL import Image,ImageDraw,ImageFont
+from waveshare_epd import epd2in13_V2
+from geopy import distance
 
 logging.basicConfig(level=logging.DEBUG)
 
-# Drawing on the image
-font15 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 15)
-font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
+
+font = ImageFont.load_default()
+home_location = (45.799502, 15.909997)
 
 class Location:
     def __init__(self, lat, lng):
@@ -32,7 +33,7 @@ class Location:
 def drawImage(h, w):
     image = Image.new('1', (h, w), 255)
     draw = ImageDraw.Draw(image)
-    draw.text((110, 100), 'Mate is', font = font15, fill = 0)
+    draw.text((110, 20), 'Mate is', font = font, fill = 0)
 
     return image
 
@@ -49,7 +50,7 @@ def getLastTracking():
     json = response.json()
     logging.info(json)
 
-    return Location(json["lat"], json["lng"])
+    return (json["lat"], json["lng"])
 
 try:
     logging.info("main started")
@@ -60,18 +61,19 @@ try:
     epd.Clear(0xFF)
 
     img = drawImage(epd.height, epd.width)
-    img.save('~/img.jpg', 'JPEG')
+    img.save('~/img2.jpg', 'JPEG')
 
-    lastLocation = Location(0, 0)
+    lastLocation = (0, 0)
 
     while True:
         location = getLastTracking()
         if location != lastLocation:
             logging.info("new location received")
+            logging.info(distance.distance(location, home_location).km)
             lastLocation = location
 
         logging.info("waiting 10s")
-        time.sleep(10000)
+        time.sleep(10)
     
     logging.info("1.Drawing on the image...")
     image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame    
