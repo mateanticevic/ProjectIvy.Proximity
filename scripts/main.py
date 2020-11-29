@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 import sys
 import os
+import datetime
 import asyncio
 import requests
 import websockets
@@ -17,13 +18,20 @@ from PIL import Image,ImageDraw,ImageFont
 from waveshare_epd import epd2in13_V2
 from geopy import distance
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, handlers=[
+    logging.FileHandler('/var/log/proximity/log.txt'),
+    logging.StreamHandler()
+])
 
 font = ImageFont.truetype(os.path.join(picdir, 'good_times_rg.ttf'), 20)
 home_location = (45.799502, 15.909997)
+start_time = datetime.datetime.now()
 
 string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
+
+class EndOfProgramException(Exception):
+    pass
 
 class Location:
     def __init__(self, lat, lng):
@@ -31,6 +39,11 @@ class Location:
         self.lng = lng
     def __eq__(self, other):
         return self.lat == other.lat and self.lng == other.lng
+
+def endIfTimeElapsed():
+    if (datetime.datetime.now() - start_time).total_seconds() > 100:
+        logging.info('ending program')
+        raise EndOfProgramException()
 
 def drawImage(h, w, distance):
     image = Image.new('1', (h, w), 255)
@@ -78,6 +91,7 @@ try:
             img = drawImage(epd.height, epd.width, distance_between)
             img.save('img2.jpg', 'JPEG')
             lastLocation = location
+            endIfTimeElapsed()
 
         logging.info("waiting 10s")
         time.sleep(10)
@@ -141,6 +155,9 @@ try:
     logging.info("Goto Sleep...")
     epd.sleep()
     epd.Dev_exit()
+
+except EndOfProgramException:
+    exit()
         
 except IOError as e:
     logging.info(e)
