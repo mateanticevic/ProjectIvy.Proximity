@@ -31,49 +31,51 @@ home_location = (45.799502, 15.909997)
 
 string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
+string_home_location = "in {name}"
 
 class EndOfProgramException(Exception):
     pass
 
 class Location:
-    def __init__(self, lat, lng):
-        self.lat = lat
-        self.lng = lng
+    def __init__(self, tracking, name):
+        self.tracking = tracking
+        self.name = name
     def __eq__(self, other):
-        return self.lat == other.lat and self.lng == other.lng
+        return self.tracking == other.tracking
 
 def endIfTimeElapsed():
     if (datetime.datetime.now() - start_time).total_seconds() > 100:
         logging.info('ending program')
         raise EndOfProgramException()
 
-def drawImage(h, w, distance):
-    #image = Image.new('1', (h, w), 255)
-    image = Image.open(os.path.join(assets_dir, 'home.bmp'))
+def drawImage(h, w, location):
+    image_name = 'home.bmp' if location.name is None else 'away.bmp'
+    image = Image.open(os.path.join(assets_dir, image_name))
     draw = ImageDraw.Draw(image)
-    draw.text((110, 20), 'Mate is', font = font, fill = 1)
+    draw.text((120, 20), 'Mate is', font = font, fill = 0)
 
-    line = string_x_m_away if distance < 1 else string_x_km_away
-    distance_formated = distance * 1000 if distance < 1 else distance
-    string_away_formatted = line.format(distance = distance_formated)
+    if location.name is None:
+        distance_between = distance.distance(location.tracking, home_location).km
+        line = string_x_m_away if distance_between < 1 else string_x_km_away
+        distance_formated = distance_between * 1000 if distance_between < 1 else distance
+        second_line = line.format(distance = distance_formated)
+    else:
+        second_line = 'home'
 
-    logging.info(string_away_formatted)
-    draw.text((110, 40), string_away_formatted, font = font, fill = 0)
+    logging.info(second_line)
+    draw.text((120, 50), second_line, font = font, fill = 0)
+
+    if location.name is not None:
+        draw.text((120, 80), string_home_location.format(name = location.name), font = font, fill = 0)
 
     return image
 
-async def hello():
-    uri = "ws://hub.anticevic.net/TrackingHub"
-    async with websockets.connect(uri) as websocket:
-        tracking = await websocket.recv()
-        logging.info(tracking)
-
 def getLastTracking():
-    uri = "https://api2.anticevic.net/tracking/last"
+    uri = "https://api2.anticevic.net/tracking/lastLocation"
     response = requests.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
     json = response.json()
 
-    return (json["lat"], json["lng"])
+    return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"])
 
 try:
     logging.info("main started")
@@ -83,14 +85,13 @@ try:
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
 
-    lastLocation = (0, 0)
+    lastLocation = Location((0,0), None)
 
     while True:
         location = getLastTracking()
         if location != lastLocation:
             logging.info("new location received")
-            distance_between = distance.distance(location, home_location).km
-            img = drawImage(epd.height, epd.width, distance_between)
+            img = drawImage(epd.height, epd.width, location)
             img.save('img2.jpg', 'JPEG')
             lastLocation = location
         endIfTimeElapsed()
