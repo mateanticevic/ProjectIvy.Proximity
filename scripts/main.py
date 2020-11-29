@@ -6,7 +6,8 @@ import datetime
 import asyncio
 import requests
 import websockets
-picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'fonts')
+assets_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'assets')
+font_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'fonts')
 libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
@@ -25,7 +26,7 @@ logging.basicConfig(level=logging.DEBUG, handlers=[
     logging.StreamHandler()
 ])
 
-font = ImageFont.truetype(os.path.join(picdir, 'font.ttc'), 20)
+font = ImageFont.truetype(os.path.join(font_dir, 'font.ttc'), 20)
 home_location = (45.799502, 15.909997)
 
 string_x_km_away = "{distance:.0f}km away"
@@ -47,7 +48,8 @@ def endIfTimeElapsed():
         raise EndOfProgramException()
 
 def drawImage(h, w, distance):
-    image = Image.new('1', (h, w), 255)
+    #image = Image.new('1', (h, w), 255)
+    image = Image.open(os.path.join(assets_dir, 'home.bmp'))
     draw = ImageDraw.Draw(image)
     draw.text((110, 20), 'Mate is', font = font, fill = 0)
 
