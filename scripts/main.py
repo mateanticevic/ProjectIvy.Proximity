@@ -49,12 +49,13 @@ def endIfTimeElapsed():
         raise EndOfProgramException()
 
 def drawImage(h, w, location):
-    image_name = 'home.bmp' if location.name is None else 'away.bmp'
+    image_name = 'away.bmp' if location.name is None else 'home.bmp'
     image = Image.open(os.path.join(assets_dir, image_name))
     draw = ImageDraw.Draw(image)
     draw.text((120, 20), 'Mate is', font = font, fill = 0)
 
     if location.name is None:
+        logging.info(location.tracking)
         distance_between = distance.distance(location.tracking, home_location).km
         line = string_x_m_away if distance_between < 1 else string_x_km_away
         distance_formated = distance_between * 1000 if distance_between < 1 else distance
@@ -75,7 +76,7 @@ def getLastTracking():
     response = requests.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
     json = response.json()
 
-    return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"])
+    return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None)
 
 try:
     logging.info("main started")
