@@ -18,14 +18,15 @@ from PIL import Image,ImageDraw,ImageFont
 from waveshare_epd import epd2in13_V2
 from geopy import distance
 
+start_time = datetime.datetime.now()
+
 logging.basicConfig(level=logging.DEBUG, handlers=[
-    logging.FileHandler('/var/log/proximity/log.txt'),
+    logging.FileHandler('/var/log/proximity/{log_file_name}.txt'.format(log_file_name = start_time.strftime('%Y-%m-%d_%H:%M:%S'))),
     logging.StreamHandler()
 ])
 
-font = ImageFont.truetype(os.path.join(picdir, 'good_times_rg.ttf'), 20)
+font = ImageFont.truetype(os.path.join(picdir, 'font.ttc'), 20)
 home_location = (45.799502, 15.909997)
-start_time = datetime.datetime.now()
 
 string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
@@ -67,9 +68,8 @@ async def hello():
 
 def getLastTracking():
     uri = "https://api2.anticevic.net/tracking/last"
-    response = requests.get(uri, headers={"Authorization": ""})
+    response = requests.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
     json = response.json()
-    logging.info(json)
 
     return (json["lat"], json["lng"])
 
@@ -91,7 +91,7 @@ try:
             img = drawImage(epd.height, epd.width, distance_between)
             img.save('img2.jpg', 'JPEG')
             lastLocation = location
-            endIfTimeElapsed()
+        endIfTimeElapsed()
 
         logging.info("waiting 10s")
         time.sleep(10)
