@@ -51,7 +51,7 @@ def drawImage(h, w, distance):
     #image = Image.new('1', (h, w), 255)
     image = Image.open(os.path.join(assets_dir, 'home.bmp'))
     draw = ImageDraw.Draw(image)
-    draw.text((110, 20), 'Mate is', font = font, fill = 0)
+    draw.text((110, 20), 'Mate is', font = font, fill = 1)
 
     line = string_x_m_away if distance < 1 else string_x_km_away
     distance_formated = distance * 1000 if distance < 1 else distance
