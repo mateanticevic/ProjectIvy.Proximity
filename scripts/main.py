@@ -15,7 +15,7 @@ if os.path.exists(libdir):
 import logging
 import time
 import traceback
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont
 from waveshare_epd import epd2in13_V2
 from geopy import distance
 
@@ -74,7 +74,7 @@ def drawImage(epd, location):
     if location.name is not None:
         draw.text((draw_text_x, draw_text_y_third), string_home_location.format(name = location.name), font = font, fill = 0)
 
-    epd.display(epd.getbuffer(ImageOps.flip(image)))
+    epd.display(epd.getbuffer(image.rotate(180)))
 
     return image
 
