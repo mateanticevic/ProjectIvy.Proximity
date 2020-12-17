@@ -74,7 +74,7 @@ def drawImage(epd, location):
     if location.name is not None:
         draw.text((draw_text_x, draw_text_y_third), string_home_location.format(name = location.name), font = font, fill = 0)
 
-    epd.display(epd.getbuffer(image.rotate(180)))
+    epd.displayPartial(epd.getbuffer(image.rotate(180)))
 
     return image
 
@@ -92,6 +92,7 @@ try:
     logging.info("init and clear")
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
+    epd.init(epd.PART_UPDATE)
 
     lastLocation = Location((0,0), None)
 
