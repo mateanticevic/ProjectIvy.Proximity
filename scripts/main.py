@@ -27,7 +27,13 @@ logging.basicConfig(level=logging.DEBUG, handlers=[
 ])
 
 font = ImageFont.truetype(os.path.join(font_dir, 'font.ttc'), 20)
+
 home_location = (45.799502, 15.909997)
+end_in_x_seconds = 100
+draw_text_x = 115
+draw_text_y_first = 20
+draw_text_y_second = 50
+draw_text_y_third = 80
 
 string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
@@ -44,30 +50,31 @@ class Location:
         return self.tracking == other.tracking
 
 def endIfTimeElapsed():
-    if (datetime.datetime.now() - start_time).total_seconds() > 100:
+    if (datetime.datetime.now() - start_time).total_seconds() > end_in_x_seconds:
         logging.info('ending program')
         raise EndOfProgramException()
 
-def drawImage(h, w, location):
+def drawImage(epd, location):
     image_name = 'away.bmp' if location.name is None else 'home.bmp'
     image = Image.open(os.path.join(assets_dir, image_name))
     draw = ImageDraw.Draw(image)
-    draw.text((120, 20), 'Mate is', font = font, fill = 0)
+    draw.text((draw_text_x, draw_text_y_first), 'Mate is', font = font, fill = 0)
 
     if location.name is None:
-        logging.info(location.tracking)
         distance_between = distance.distance(location.tracking, home_location).km
         line = string_x_m_away if distance_between < 1 else string_x_km_away
-        distance_formated = distance_between * 1000 if distance_between < 1 else distance
+        distance_formated = distance_between * 1000 if distance_between < 1 else distance_between
         second_line = line.format(distance = distance_formated)
     else:
         second_line = 'home'
 
     logging.info(second_line)
-    draw.text((120, 50), second_line, font = font, fill = 0)
+    draw.text((draw_text_x, draw_text_y_second), second_line, font = font, fill = 0)
 
     if location.name is not None:
-        draw.text((120, 80), string_home_location.format(name = location.name), font = font, fill = 0)
+        draw.text((draw_text_x, draw_text_y_third), string_home_location.format(name = location.name), font = font, fill = 0)
+
+    epd.display(epd.getbuffer(image))
 
     return image
 
@@ -92,8 +99,7 @@ try:
         location = getLastTracking()
         if location != lastLocation:
             logging.info("new location received")
-            img = drawImage(epd.height, epd.width, location)
-            img.save('img2.jpg', 'JPEG')
+            img = drawImage(epd, location)
             lastLocation = location
         endIfTimeElapsed()
 
@@ -117,21 +123,6 @@ try:
     draw.text((120, 60), 'e-Paper demo', font = font, fill = 0)
     draw.text((110, 90), u'微雪电子', font = font, fill = 0)
     epd.display(epd.getbuffer(image))
-    time.sleep(2)
-    
-    # read bmp file 
-    logging.info("2.read bmp file...")
-    image = Image.open(os.path.join(picdir, '2in13.bmp'))
-    epd.display(epd.getbuffer(image))
-    time.sleep(2)
-    
-    # read bmp file on window
-    logging.info("3.read bmp file on window...")
-    # epd.Clear(0xFF)
-    image1 = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    bmp = Image.open(os.path.join(picdir, '100x100.bmp'))
-    image1.paste(bmp, (2,2))    
-    epd.display(epd.getbuffer(image1))
     time.sleep(2)
     
     # # partial update
