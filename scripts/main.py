@@ -54,7 +54,7 @@ def endIfTimeElapsed():
         logging.info('ending program')
         raise EndOfProgramException()
 
-def drawImage(epd, location):
+def drawImage(epd, is_initial, location):
     image_name = 'away.bmp' if location.name is None else 'home.bmp'
     image = Image.open(os.path.join(assets_dir, image_name))
     draw = ImageDraw.Draw(image)
@@ -74,7 +74,12 @@ def drawImage(epd, location):
     if location.name is not None:
         draw.text((draw_text_x, draw_text_y_third), string_home_location.format(name = location.name), font = font, fill = 0)
 
-    epd.displayPartial(epd.getbuffer(image.rotate(180)))
+    if is_initial:
+        epd.init(epd.FULL_UPDATE)
+        epd.displayPartBaseImage(epd.getbuffer(image.rotate(180)))
+    else:
+        epd.init(epd.PART_UPDATE)
+        epd.displayPartial(epd.getbuffer(image.rotate(180)))
 
     return image
 
@@ -92,16 +97,17 @@ try:
     logging.info("init and clear")
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
-    epd.init(epd.PART_UPDATE)
 
-    lastLocation = Location((0,0), None)
+    last_location = Location((0,0), None)
+    is_initial = True
 
     while True:
         location = getLastTracking()
-        if location != lastLocation:
+        if location != last_location:
             logging.info("new location received")
-            img = drawImage(epd, location)
-            lastLocation = location
+            img = drawImage(epd, is_initial, location)
+            is_initial = False
+            last_location = location
         endIfTimeElapsed()
 
         logging.info("waiting 10s")
