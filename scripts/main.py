@@ -21,14 +21,14 @@ from geopy import distance
 
 start_time = datetime.datetime.now()
 
-logging.basicConfig(level=logging.DEBUG, handlers=[
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', handlers=[
     logging.FileHandler('/var/log/proximity/{log_file_name}.txt'.format(log_file_name = start_time.strftime('%Y-%m-%d_%H:%M:%S'))),
     logging.StreamHandler()
 ])
 
 font = ImageFont.truetype(os.path.join(font_dir, 'font.ttc'), 20)
 
-home_location = (45.799502, 15.909997)
+home_location = (44.126227, 15.237280)
 end_in_x_seconds = 3600 * 24
 draw_text_x = 115
 draw_text_y_first = 20
