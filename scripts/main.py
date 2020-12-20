@@ -39,6 +39,9 @@ string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
 string_home_location = "in {name}"
 
+class UnauthorizedException(Exception):
+    pass
+
 class EndOfProgramException(Exception):
     pass
 
@@ -86,6 +89,11 @@ def drawImage(epd, is_initial, location):
 def getLastTracking():
     uri = "https://api2.anticevic.net/tracking/lastLocation"
     response = requests.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
+
+    if response.status_code == 401:
+        logging.error("client not authorized")
+        raise UnauthorizedException()
+
     json = response.json()
 
     return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None)
@@ -112,44 +120,7 @@ try:
 
         logging.info("waiting 10s")
         time.sleep(10)
-    
-    logging.info("1.Drawing on the image...")
-    image = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame    
-    draw = ImageDraw.Draw(image)
-    
-    draw.rectangle([(0,0),(50,50)],outline = 0)
-    draw.rectangle([(55,0),(100,50)],fill = 0)
-    draw.line([(0,0),(50,50)], fill = 0,width = 1)
-    draw.line([(0,50),(50,0)], fill = 0,width = 1)
-    draw.chord((10, 60, 50, 100), 0, 360, fill = 0)
-    draw.ellipse((55, 60, 95, 100), outline = 0)
-    draw.pieslice((55, 60, 95, 100), 90, 180, outline = 0)
-    draw.pieslice((55, 60, 95, 100), 270, 360, fill = 0)
-    draw.polygon([(110,0),(110,50),(150,25)],outline = 0)
-    draw.polygon([(190,0),(190,50),(150,25)],fill = 0)
-    draw.text((120, 60), 'e-Paper demo', font = font, fill = 0)
-    draw.text((110, 90), u'微雪电子', font = font, fill = 0)
-    epd.display(epd.getbuffer(image))
-    time.sleep(2)
-    
-    # # partial update
-    logging.info("4.show time...")
-    time_image = Image.new('1', (epd.height, epd.width), 255)
-    time_draw = ImageDraw.Draw(time_image)
-    
-    epd.init(epd.FULL_UPDATE)
-    epd.displayPartBaseImage(epd.getbuffer(time_image))
-    
-    epd.init(epd.PART_UPDATE)
-    num = 0
-    while (True):
-        time_draw.rectangle((120, 80, 220, 105), fill = 255)
-        time_draw.text((120, 80), time.strftime('%H:%M:%S'), font = font, fill = 0)
-        epd.displayPartial(epd.getbuffer(time_image))
-        num = num + 1
-        if(num == 10):
-            break
-    
+
     logging.info("Clear...")
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
@@ -157,6 +128,9 @@ try:
     logging.info("Goto Sleep...")
     epd.sleep()
     epd.Dev_exit()
+
+except UnauthorizedException:
+    exit()
 
 except EndOfProgramException:
     exit()
