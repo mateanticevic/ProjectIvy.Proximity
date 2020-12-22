@@ -87,16 +87,21 @@ def drawImage(epd, is_initial, location):
     return image
 
 def getLastTracking():
-    uri = "https://api2.anticevic.net/tracking/lastLocation"
-    response = requests.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
+    try:
+        uri = "https://api2.anticevic.net/tracking/lastLocation"
+        response = requests.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
 
-    if response.status_code == 401:
-        logging.error("client not authorized")
-        raise UnauthorizedException()
+        if response.status_code == 401:
+            logging.error("client not authorized")
+            raise UnauthorizedException()
 
-    json = response.json()
+        json = response.json()
 
-    return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None)
+        return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None)
+    except UnauthorizedException as e:
+        raise e
+    except:
+        return None
 
 try:
     logging.info("main started")
@@ -111,7 +116,7 @@ try:
 
     while True:
         location = getLastTracking()
-        if location != last_location:
+        if location is not None and location != last_location:
             logging.info("new location received")
             img = drawImage(epd, is_initial, location)
             is_initial = False
