@@ -126,24 +126,19 @@ try:
         logging.info("waiting 10s")
         time.sleep(10)
 
-    logging.info("Clear...")
-    epd.init(epd.FULL_UPDATE)
-    epd.Clear(0xFF)
-    
-    logging.info("Goto Sleep...")
-    epd.sleep()
-    epd.Dev_exit()
-
 except UnauthorizedException:
+    logging.info("program ended - api token invalid")
     exit()
 
 except EndOfProgramException:
+    logging.info("program ended - time elapsed")
     exit()
         
 except IOError as e:
     logging.info(e)
+    exit()
     
-except KeyboardInterrupt:    
-    logging.info("ctrl + c:")
+except KeyboardInterrupt:
+    logging.info("program ended - keyboard interrupt")
     epd2in13_V2.epdconfig.module_exit()
     exit()
