@@ -39,6 +39,8 @@ string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
 string_home_location = "in {name}"
 
+session = requests.session()
+
 class UnauthorizedException(Exception):
     pass
 
@@ -89,7 +91,7 @@ def drawImage(epd, is_initial, location):
 def getLastTracking():
     try:
         uri = "https://api2.anticevic.net/tracking/lastLocation"
-        response = requests.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
+        response = session.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
 
         if response.status_code == 401:
             logging.error("client not authorized")
