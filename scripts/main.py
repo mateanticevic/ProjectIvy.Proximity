@@ -38,6 +38,7 @@ draw_text_y_third = 80
 string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
 string_home_location = "in {name}"
+string_response_took = "http response took {elapsed}s"
 
 session = requests.session()
 
@@ -92,6 +93,8 @@ def getLastTracking():
     try:
         uri = "https://api2.anticevic.net/tracking/lastLocation"
         response = session.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']})
+
+        logging.info(string_response_took.format(elapsed = response.elapsed.total_seconds()))
 
         if response.status_code == 401:
             logging.error("client not authorized")
