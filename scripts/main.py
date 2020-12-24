@@ -106,6 +106,7 @@ def getLastTracking():
     except UnauthorizedException as e:
         raise e
     except:
+        logging.error('api call failed')
         return None
 
 try:
