@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(m
 
 font = ImageFont.truetype(os.path.join(font_dir, 'font.ttc'), 20)
 
-home_location = (44.126227, 15.237280)
+home_location = (44.117965, 15.234143)
 end_in_x_seconds = 3600 * 24
 draw_text_x = 120
 draw_text_y_first = 20
