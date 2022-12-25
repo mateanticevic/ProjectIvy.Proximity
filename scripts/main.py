@@ -108,7 +108,7 @@ def getLastTracking():
 
         json = response.json()
 
-        return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None)
+        return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None, json["location"]["typeId"] if json["location"] is not None else None)
     except UnauthorizedException as e:
         raise e
     except Exception:
