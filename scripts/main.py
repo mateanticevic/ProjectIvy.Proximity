@@ -73,7 +73,7 @@ def drawImage(epd, is_initial, location):
         image_name = "home.bmp"
         second_line = 'home'
     elif location.typeId == "work":
-        image_name = "work.png"
+        image_name = "work.bmp"
         second_line = 'at work'
 
     image = Image.open(os.path.join(assets_dir, image_name))
