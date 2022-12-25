@@ -50,9 +50,10 @@ class EndOfProgramException(Exception):
     pass
 
 class Location:
-    def __init__(self, tracking, name):
+    def __init__(self, tracking, name, typeId):
         self.tracking = tracking
         self.name = name
+        self.typeId = typeId
     def __eq__(self, other):
         return self.tracking == other.tracking
 
