@@ -111,8 +111,8 @@ def getLastTracking():
         return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None)
     except UnauthorizedException as e:
         raise e
-    except:
-        logging.error('api call failed')
+    except Exception:
+        logging.error('api call failed', exc_info=True)
         return None
 
 try:
