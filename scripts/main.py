@@ -35,9 +35,10 @@ draw_text_y_first = 20
 draw_text_y_second = 50
 draw_text_y_third = 80
 
+string_user_first_line = "Mate is"
 string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
-string_home_location = "in {name}"
+string_home_location = "at {name}"
 string_response_took = "http response took {elapsed}s"
 
 session = requests.session()
@@ -61,18 +62,22 @@ def endIfTimeElapsed():
         raise EndOfProgramException()
 
 def drawImage(epd, is_initial, location):
-    image_name = 'away.bmp' if location.name is None else 'home.bmp'
-    image = Image.open(os.path.join(assets_dir, image_name))
-    draw = ImageDraw.Draw(image)
-    draw.text((draw_text_x, draw_text_y_first), 'Mate is', font = font, fill = 0)
-
     if location.name is None:
+        image_name = "away.bmp"
         distance_between = distance.distance(location.tracking, home_location).km
         line = string_x_m_away if distance_between < 1 else string_x_km_away
         distance_formated = distance_between * 1000 if distance_between < 1 else distance_between
         second_line = line.format(distance = distance_formated)
-    else:
+    elif location.typeId == "home":
+        image_name = "home.bmp"
         second_line = 'home'
+    elif location.typeId == "work":
+        image_name = "work.png"
+        second_line = 'at work'
+
+    image = Image.open(os.path.join(assets_dir, image_name))
+    draw = ImageDraw.Draw(image)
+    draw.text((draw_text_x, draw_text_y_first), string_user_first_line, font = font, fill = 0)
 
     logging.info(second_line)
     draw.text((draw_text_x, draw_text_y_second), second_line, font = font, fill = 0)
@@ -91,7 +96,7 @@ def drawImage(epd, is_initial, location):
 
 def getLastTracking():
     try:
-        uri = "https://api2.anticevic.net/tracking/lastLocation"
+        uri = "https://api.anticevic.net/tracking/lastLocation"
         response = session.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']}, timeout = 10)
 
         logging.info(string_response_took.format(elapsed = response.elapsed.total_seconds()))
