@@ -40,6 +40,7 @@ string_x_km_away = "{distance:.0f}km away"
 string_x_m_away = "{distance:.0f}m away"
 string_home_location = "at {name}"
 string_response_took = "http response took {elapsed}s"
+string_away_in = "in {place}"
 
 session = requests.session()
 
@@ -50,10 +51,12 @@ class EndOfProgramException(Exception):
     pass
 
 class Location:
-    def __init__(self, tracking, name, typeId):
+    def __init__(self, tracking, name, typeId, country, city):
         self.tracking = tracking
         self.name = name
         self.typeId = typeId
+        self.country = country
+        self.city = city
     def __eq__(self, other):
         return self.tracking == other.tracking
 
@@ -65,10 +68,15 @@ def endIfTimeElapsed():
 def drawImage(epd, is_initial, location):
     if location.name is None:
         image_name = "away.bmp"
-        distance_between = distance.distance(location.tracking, home_location).km
-        line = string_x_m_away if distance_between < 1 else string_x_km_away
-        distance_formated = distance_between * 1000 if distance_between < 1 else distance_between
-        second_line = line.format(distance = distance_formated)
+        if location.city is not None:
+            second_line = string_away_in.format(place = location.city)
+        elif location.country is not None:
+            second_line = string_away_in.format(place = location.country)
+        else:
+            distance_between = distance.distance(location.tracking, home_location).km
+            line = string_x_m_away if distance_between < 1 else string_x_km_away
+            distance_formated = distance_between * 1000 if distance_between < 1 else distance_between
+            second_line = line.format(distance = distance_formated)
     elif location.typeId == "home":
         image_name = "home.bmp"
         second_line = 'home'
@@ -108,7 +116,7 @@ def getLastTracking():
 
         json = response.json()
 
-        return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None, json["location"]["typeId"] if json["location"] is not None else None)
+        return Location((json["tracking"]["lat"], json["tracking"]["lng"]), json["location"]["name"] if json["location"] is not None else None, json["location"]["typeId"] if json["location"] is not None else None, json["country"]["name"] if json["country"] is not None else None, json["city"]["name"] if json["city"] is not None else None)
     except UnauthorizedException as e:
         raise e
     except Exception:
