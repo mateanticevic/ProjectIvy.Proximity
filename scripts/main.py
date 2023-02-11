@@ -131,7 +131,7 @@ try:
     epd.init(epd.FULL_UPDATE)
     epd.Clear(0xFF)
 
-    last_location = Location((0,0), None, None)
+    last_location = Location((0,0), None, None, None, None)
     is_initial = True
 
     while True:
