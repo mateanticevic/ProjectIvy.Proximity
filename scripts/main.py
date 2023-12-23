@@ -106,7 +106,7 @@ def drawImage(epd, is_initial, location):
 def getLastTracking():
     try:
         uri = "https://api.anticevic.net/tracking/lastLocation"
-        response = session.get(uri, headers={"Authorization": os.environ['PROJECT_IVY_TOKEN']}, timeout = 10)
+        response = session.get(uri, headers={"Authorization": "Bearer {}".format(os.environ['PROJECT_IVY_TOKEN'])}, timeout = 10)
 
         logging.info(string_response_took.format(elapsed = response.elapsed.total_seconds()))
 
