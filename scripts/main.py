@@ -67,6 +67,7 @@ def endIfTimeElapsed():
 
 def drawImage(epd, is_initial, location):
     image_name = "home.bmp"
+    second_line = "home"
     if location.name is None:
         image_name = "away.bmp"
         if location.city is not None:
