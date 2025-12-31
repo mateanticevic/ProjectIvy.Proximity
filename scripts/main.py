@@ -66,6 +66,7 @@ def endIfTimeElapsed():
         raise EndOfProgramException()
 
 def drawImage(epd, is_initial, location):
+    image_name = "home.bmp"
     if location.name is None:
         image_name = "away.bmp"
         if location.city is not None:
