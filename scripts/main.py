@@ -135,25 +135,30 @@ try:
 
     last_location = Location((0,0), None, None, None, None)
     is_initial = True
+    is_unauthenticated = False
 
     while True:
-        location = getLastTracking()
-        if location is not None and location != last_location:
-            logging.info("new location received")
-            img = drawImage(epd, is_initial, location)
-            is_initial = False
-            last_location = location
+        try:
+            location = getLastTracking()
+        except UnauthorizedException:
+            if not is_unauthenticated:
+                with Image.open(os.path.join(assets_dir, 'unauthenticated.bmp')) as image:
+                    epd.init(epd.FULL_UPDATE)
+                    epd.displayPartBaseImage(epd.getbuffer(image.rotate(180)))
+                is_unauthenticated = True
+                is_initial = True
+            logging.info("api token invalid - retrying in 10s")
+        else:
+            if location is not None and (is_unauthenticated or location != last_location):
+                logging.info("new location received")
+                img = drawImage(epd, is_initial, location)
+                is_initial = False
+                is_unauthenticated = False
+                last_location = location
         endIfTimeElapsed()
 
         logging.info("waiting 10s")
         time.sleep(10)
-
-except UnauthorizedException:
-    with Image.open(os.path.join(assets_dir, 'unauthenticated.bmp')) as image:
-        epd.init(epd.FULL_UPDATE)
-        epd.displayPartBaseImage(epd.getbuffer(image.rotate(180)))
-    logging.info("program ended - api token invalid")
-    exit()
 
 except EndOfProgramException:
     logging.info("program ended - time elapsed")
