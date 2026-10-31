@@ -149,6 +149,9 @@ try:
         time.sleep(10)
 
 except UnauthorizedException:
+    with Image.open(os.path.join(assets_dir, 'unauthenticated.bmp')) as image:
+        epd.init(epd.FULL_UPDATE)
+        epd.displayPartBaseImage(epd.getbuffer(image.rotate(180)))
     logging.info("program ended - api token invalid")
     exit()
 
